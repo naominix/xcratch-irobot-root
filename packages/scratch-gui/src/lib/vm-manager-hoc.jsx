@@ -59,22 +59,15 @@ const vmManagerHOC = function (WrappedComponent) {
                 this.props.vm.start();
             }
         }
-        loadExtensionsFromURL () {
-            const urls = window.location.search.substr(1)
-                .split('&')
-                .reduce((acc, cur) => {
-                    const eqIdx = cur.indexOf('=');
-                    if (eqIdx < 0) return acc;
-                    const key = cur.substring(0, eqIdx);
-                    const val = cur.substring(eqIdx + 1);
-                    if (key === 'extension' && val) {
-                        acc.push(decodeURIComponent(val));
-                    }
-                    return acc;
-                }, []);
-            urls.forEach(url => {
-                this.props.vm.extensionManager.loadExtensionURL(url);
-            });
+        async loadExtensionsFromURL () {
+            const urls = new URLSearchParams(window.location.search)
+                .getAll('extension')
+                .filter(Boolean);
+            for (const url of urls) {
+                // Loading in URL order prevents extension registration from racing
+                // when multiple extension parameters are supplied.
+                await this.props.vm.extensionManager.loadExtensionURL(url);
+            }
         }
         getProjectData () {
             const search = window.location.search.substr(1)
