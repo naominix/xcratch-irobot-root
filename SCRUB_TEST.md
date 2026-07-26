@@ -16,4 +16,23 @@ Expected URL:
 
 `https://naominix.github.io/xcratch-scrub-test/editor/`
 
+## Loading multiple extensions
+
+Repeat the `extension` query parameter to load more than one extension. Each
+extension URL must be percent-encoded independently:
+
+```text
+https://naominix.github.io/xcratch-scrub-test/editor/?extension=<encoded-extension-url-1>&extension=<encoded-extension-url-2>
+```
+
+For example, this loads iRobot Root and MicroBit More:
+
+```text
+https://naominix.github.io/xcratch-scrub-test/editor/?extension=https%3A%2F%2Fnaominix.github.io%2Fxcx-irobot-root%2FirobotRoot.mjs&extension=https%3A%2F%2Fmicrobit-more.github.io%2Fdist%2FmicrobitMore.mjs
+```
+
+The extensions are loaded sequentially in the order in which they appear in
+the URL. This avoids extension registration races and gives deterministic
+behavior when multiple extensions are requested.
+
 This is a test deployment, not an official Xcratch distribution.
