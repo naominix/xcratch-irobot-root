@@ -6,7 +6,7 @@ WebAudioTestAPI.setState({
 
 import React from 'react';
 import configureStore from 'redux-mock-store';
-import {render} from '@testing-library/react';
+import {render, waitFor} from '@testing-library/react';
 import VM from '@scratch/scratch-vm';
 import {LoadingState} from '../../../src/reducers/project-state';
 
@@ -137,6 +137,45 @@ describe('VMManagerHOC', () => {
             />
         );
         expect(vm.start).not.toHaveBeenCalled();
+    });
+    test('loads repeated extension URL parameters in order', async () => {
+        const originalUrl = window.location.href;
+        try {
+            window.history.replaceState({}, '',
+                '?extension=https%3A%2F%2Fexample.com%2Ffirst.mjs' +
+                '&extension=https%3A%2F%2Fexample.com%2Fsecond.mjs');
+
+            let resolveFirst;
+            vm.extensionManager.loadExtensionURL = jest.fn()
+                .mockImplementationOnce(() => new Promise(resolve => {
+                    resolveFirst = resolve;
+                }))
+                .mockResolvedValueOnce();
+
+            const Component = () => <div />;
+            const WrappedComponent = vmManagerHOC(Component);
+            render(
+                <WrappedComponent
+                    isPlayerOnly={false}
+                    isStarted={false}
+                    store={store}
+                    vm={vm}
+                />
+            );
+
+            expect(vm.extensionManager.loadExtensionURL).toHaveBeenCalledTimes(1);
+            expect(vm.extensionManager.loadExtensionURL).toHaveBeenNthCalledWith(
+                1, 'https://example.com/first.mjs'
+            );
+
+            resolveFirst();
+            await waitFor(() => expect(vm.extensionManager.loadExtensionURL).toHaveBeenCalledTimes(2));
+            expect(vm.extensionManager.loadExtensionURL).toHaveBeenNthCalledWith(
+                2, 'https://example.com/second.mjs'
+            );
+        } finally {
+            window.history.replaceState({}, '', originalUrl);
+        }
     });
     test('if the isLoadingWithId prop becomes true, it loads project data into the vm', () => {
         vm.loadProject = jest.fn(() => Promise.resolve());
