@@ -70,12 +70,9 @@ import irobotRootInsetIconURL from './irobotRoot/irobotRoot-small.png';
 import g2sIconURL from './g2s/g2s.png';
 import g2sInsetIconURL from './g2s/g2s-small.png';
 
-const microbitMoreExtensionURL =
-    './static/preloaded-extensions/https%3A%2F%2Fmicrobit-more%2Egithub%2Eio%2Fdist%2FmicrobitMore%2Emjs.mjs';
-const irobotRootExtensionURL =
-    './static/preloaded-extensions/https%3A%2F%2Fnaominix%2Egithub%2Eio%2Fxcx-irobot-root%2FirobotRoot%2Emjs.mjs';
-const g2sExtensionURL =
-    './static/preloaded-extensions/https%3A%2F%2Ftfabworks%2Egithub%2Eio%2Fxcx-g2s%2Fdist%2Fg2s%2Emjs.mjs';
+const microbitMoreExtensionURL = './static/preloaded-extensions/microbitMore.mjs';
+const irobotRootExtensionURL = './static/preloaded-extensions/irobotRoot.mjs';
+const g2sExtensionURL = './static/preloaded-extensions/g2s.mjs';
 
 const extensions = [
     {

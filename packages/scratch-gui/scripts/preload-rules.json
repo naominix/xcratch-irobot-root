@@ -1,8 +1,17 @@
 {
     "approved": [
-        "https://microbit-more.github.io/dist/microbitMore.mjs",
-        "https://naominix.github.io/xcx-irobot-root/irobotRoot.mjs",
-        "https://tfabworks.github.io/xcx-g2s/dist/g2s.mjs"
+        {
+            "url": "https://microbit-more.github.io/dist/microbitMore.mjs",
+            "fileName": "microbitMore.mjs"
+        },
+        {
+            "url": "https://naominix.github.io/xcx-irobot-root/irobotRoot.mjs",
+            "fileName": "irobotRoot.mjs"
+        },
+        {
+            "url": "https://tfabworks.github.io/xcx-g2s/dist/g2s.mjs",
+            "fileName": "g2s.mjs"
+        }
     ],
     "vendors": [
         {

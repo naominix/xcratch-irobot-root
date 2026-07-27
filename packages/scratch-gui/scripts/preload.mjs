@@ -14,12 +14,6 @@ const fetchTimeout = 30000; // [ms]
 const rulesPath = path.join(__dirname, 'preload-rules.json');
 const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
 
-// Create safe filename from URL
-const getUrlAsPath = url => encodeURIComponent(url)
-    .replace(/\./g, '%2E')
-    .replace(/\//g, '%2F')
-    .replace(/:/g, '%3A');
-
 // Check if content is a valid Xcratch extension (entry or blockClass)
 const isValidExtensionContent = content => {
     try {
@@ -62,12 +56,12 @@ const staticVendorDir = path.join(basePath, 'static', 'vendor');
 
 /**
  * Download extension to local
- * @param {string} url URL to download
+ * @param {object} extension Extension download rule
  * @returns {string} public path for the downloaded file
  */
-const downloadExtension = async url => {
-    console.info(`Downloading extension: ${url}`);
-    const extResponse = await fetchWithTimeout(url);
+const downloadExtension = async extension => {
+    console.info(`Downloading extension: ${extension.url}`);
+    const extResponse = await fetchWithTimeout(extension.url);
     const content = await extResponse.text();
     // Validate content
     if (!isValidExtensionContent(content)) {
@@ -75,10 +69,9 @@ const downloadExtension = async url => {
     }
     
     fs.mkdirSync(staticExtensionDir, {recursive: true});
-    const fileName = `${getUrlAsPath(url)}.mjs`;
-    const extPath = path.join(staticExtensionDir, fileName);
+    const extPath = path.join(staticExtensionDir, extension.fileName);
     fs.writeFileSync(extPath, content);
-    return `./static/preloaded-extensions/${fileName}`;
+    return `./static/preloaded-extensions/${extension.fileName}`;
     
 };
 
@@ -100,12 +93,12 @@ const preload = async () => {
     const downloadedExtensions = []; // Track downloaded extensions
     try {
         // Download the approved extension
-        for (const url of rules.approved) {
+        for (const extension of rules.approved) {
             try {
-                const extPath = await downloadExtension(url);
-                downloadedExtensions.push({url: url, path: extPath});
+                const extPath = await downloadExtension(extension);
+                downloadedExtensions.push({url: extension.url, path: extPath});
             } catch (error) {
-                console.warn(`Failed to process approved extension ${url}:`, error.message);
+                console.warn(`Failed to process approved extension ${extension.url}:`, error.message);
                 continue; // Skip to next approved extension
             }
         }
