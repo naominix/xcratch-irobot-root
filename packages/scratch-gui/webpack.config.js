@@ -49,6 +49,14 @@ const baseConfig = new ScratchWebpackConfigBuilder(
             clean: false
         },
         resolve: {
+            // Keep React singletons inside this workspace. Without
+            // explicit aliases, a nested checkout can accidentally resolve a
+            // second copy from a parent node_modules directory, which causes
+            // React hooks to fail at editor startup.
+            alias: {
+                'react': path.resolve(__dirname, '../../node_modules/react'),
+                'react-dom': path.resolve(__dirname, '../../node_modules/react-dom')
+            },
             fallback: {
                 Buffer: require.resolve('buffer/'),
                 stream: require.resolve('stream-browserify')

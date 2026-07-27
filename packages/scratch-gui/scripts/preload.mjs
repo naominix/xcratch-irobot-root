@@ -33,44 +33,6 @@ const isValidExtensionContent = content => {
     }
 };
 
-// Check if content contains only entry (no blockClass)
-const hasOnlyEntry = content => {
-    try {
-        return content.includes('entry') && !content.includes('blockClass');
-    } catch (error) {
-        console.error('Error checking if content has only entry:', error);
-        return false;
-    }
-};
-
-// Extract extensionURL from entry content
-const extractExtensionURL = content => {
-    try {
-        // Match extensionURL property in the entry object
-        const match = content.match(/extensionURL\s*:\s*['"]([^'"]+)['"]/);
-        return match ? match[1] : null;
-    } catch (error) {
-        console.error('Error extracting extensionURL:', error);
-        return null;
-    }
-};
-
-// Resolve extensionURL (handle relative paths)
-const resolveExtensionURL = (extensionURL, baseURL) => {
-    try {
-        // If extensionURL is absolute, return as is
-        if (extensionURL.startsWith('http://') || extensionURL.startsWith('https://')) {
-            return extensionURL;
-        }
-        // If relative, resolve against baseURL
-        const base = new URL(baseURL);
-        return new URL(extensionURL, base).href;
-    } catch (error) {
-        console.error('Error resolving extensionURL:', error);
-        return null;
-    }
-};
-
 // Fetch with timeout
 const fetchWithTimeout = async (url, timeout = fetchTimeout) => {
     const controller = new AbortController();
@@ -95,11 +57,13 @@ const fetchWithTimeout = async (url, timeout = fetchTimeout) => {
 };
 
 const preloadDir = path.join(basePath, 'preload');
+const staticExtensionDir = path.join(basePath, 'static', 'preloaded-extensions');
+const staticVendorDir = path.join(basePath, 'static', 'vendor');
 
 /**
  * Download extension to local
  * @param {string} url URL to download
- * @returns {string} relative path for the downloaded file
+ * @returns {string} public path for the downloaded file
  */
 const downloadExtension = async url => {
     console.info(`Downloading extension: ${url}`);
@@ -110,52 +74,29 @@ const downloadExtension = async url => {
         throw new Error('Invalid extension content');
     }
     
-    const extDir = path.join(preloadDir, getUrlAsPath(url));
-    fs.mkdirSync(extDir, {recursive: true});
-    
-    // Check if content has only entry (no blockClass)
-    if (hasOnlyEntry(content)) {
-        console.info('  Entry-only content detected, saving as entry.mjs');
-        // Save as entry.mjs
-        const entryPath = path.join(extDir, 'entry.mjs');
-        fs.writeFileSync(entryPath, content);
-        
-        // Extract extensionURL and download extension.mjs
-        const extensionURL = extractExtensionURL(content);
-        if (!extensionURL) {
-            throw new Error('extensionURL not found in entry content');
-        }
-        
-        // Resolve extensionURL (handle relative paths)
-        const resolvedURL = resolveExtensionURL(extensionURL, url);
-        if (!resolvedURL) {
-            throw new Error('Failed to resolve extensionURL');
-        }
-        
-        console.info(`  Downloading blockClass from: ${resolvedURL}`);
-        const blockClassResponse = await fetchWithTimeout(resolvedURL);
-        const blockClassContent = await blockClassResponse.text();
-        
-        // Validate blockClass content
-        if (!blockClassContent.trim()) {
-            throw new Error('Invalid blockClass content');
-        }
-        
-        // Save as extension.mjs
-        const extPath = path.join(extDir, 'extension.mjs');
-        fs.writeFileSync(extPath, blockClassContent);
-        return path.relative(preloadDir, extPath);
-    }
-    // Save as extension.mjs (original behavior)
-    const extPath = path.join(extDir, 'extension.mjs');
+    fs.mkdirSync(staticExtensionDir, {recursive: true});
+    const fileName = `${getUrlAsPath(url)}.mjs`;
+    const extPath = path.join(staticExtensionDir, fileName);
     fs.writeFileSync(extPath, content);
-    return path.relative(preloadDir, extPath);
+    return `./static/preloaded-extensions/${fileName}`;
     
+};
+
+const downloadVendor = async vendor => {
+    console.info(`Downloading vendor: ${vendor.url}`);
+    const response = await fetchWithTimeout(vendor.url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const content = await response.text();
+    if (!content.trim()) throw new Error('Empty vendor content');
+    fs.mkdirSync(staticVendorDir, {recursive: true});
+    fs.writeFileSync(path.join(staticVendorDir, vendor.fileName), content);
 };
 
 // Preload extensions
 const preload = async () => {
     fs.mkdirSync(preloadDir, {recursive: true});
+    fs.mkdirSync(staticExtensionDir, {recursive: true});
+    fs.mkdirSync(staticVendorDir, {recursive: true});
     const downloadedExtensions = []; // Track downloaded extensions
     try {
         // Download the approved extension
@@ -168,11 +109,21 @@ const preload = async () => {
                 continue; // Skip to next approved extension
             }
         }
+        for (const vendor of rules.vendors || []) {
+            await downloadVendor(vendor);
+        }
         console.info('Preload complete');
     } finally {
-        // Save updated JSON with only valid extensions
+        // Keep the legacy preload manifest empty. These modules are served as
+        // local static assets and imported only after the user selects them.
+        // Importing integrated extension bundles at editor startup can load a
+        // second React runtime and break the GUI before the library opens.
         fs.writeFileSync(
             path.join(preloadDir, 'preload.json'),
+            JSON.stringify([], null, 2)
+        );
+        fs.writeFileSync(
+            path.join(staticExtensionDir, 'manifest.json'),
             JSON.stringify(downloadedExtensions, null, 2)
         );
     }

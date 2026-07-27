@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "prebuild": "node ./scripts/makePWAAssetsManifest.js",
-    "preload": "rimraf ./preload && node scripts/preload.mjs",
+    "preload": "rimraf ./preload ./static/preloaded-extensions ./static/vendor && node scripts/preload.mjs",
     "build": "npm run clean && npm run build:dev && npm run build:dist && npm run build:dist-standalone",
     "build:dev": "BUILD_TYPE=dev webpack",
     "build:dist": "cross-env NODE_ENV=production BUILD_TYPE=dist webpack",

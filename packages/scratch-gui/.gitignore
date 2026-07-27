@@ -34,3 +34,5 @@ service-worker.js
 
 # preload
 /preload
+/static/preloaded-extensions
+/static/vendor

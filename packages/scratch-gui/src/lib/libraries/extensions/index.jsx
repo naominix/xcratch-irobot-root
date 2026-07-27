@@ -49,7 +49,189 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 import faceSensingIconURL from './faceSensing/faceSensing.png';
 import faceSensingInsetIconURL from './faceSensing/faceSensing-small.svg';
 
+import posenet2scratchIconURL from './posenet2scratch/posenet2scratch.png';
+import posenet2scratchInsetIconURL from './posenet2scratch/posenet2scratch-small.png';
+
+import tm2scratchIconURL from './tm2scratch/tm2scratch.png';
+import tm2scratchInsetIconURL from './tm2scratch/tm2scratch-small.png';
+
+import tmpose2scratchIconURL from './tmpose2scratch/tmpose2scratch.png';
+import tmpose2scratchInsetIconURL from './tmpose2scratch/tmpose2scratch-small.png';
+
+import scratch2maqueenIconURL from './scratch2maqueen/scratch2maqueen.png';
+import scratch2maqueenInsetIconURL from './scratch2maqueen/scratch2maqueen-small.png';
+
+import speech2scratchIconURL from './speech2scratch/speech2scratch.png';
+import speech2scratchInsetIconURL from './speech2scratch/speech2scratch-small.png';
+
+import irobotRootIconURL from './irobotRoot/irobotRoot.png';
+import irobotRootInsetIconURL from './irobotRoot/irobotRoot-small.png';
+
+import g2sIconURL from './g2s/g2s.png';
+import g2sInsetIconURL from './g2s/g2s-small.png';
+
+const microbitMoreExtensionURL =
+    './static/preloaded-extensions/https%3A%2F%2Fmicrobit-more%2Egithub%2Eio%2Fdist%2FmicrobitMore%2Emjs.mjs';
+const irobotRootExtensionURL =
+    './static/preloaded-extensions/https%3A%2F%2Fnaominix%2Egithub%2Eio%2Fxcx-irobot-root%2FirobotRoot%2Emjs.mjs';
+const g2sExtensionURL =
+    './static/preloaded-extensions/https%3A%2F%2Ftfabworks%2Egithub%2Eio%2Fxcx-g2s%2Fdist%2Fg2s%2Emjs.mjs';
+
 const extensions = [
+    {
+        name: 'micro:bit More v2',
+        extensionId: 'microbitMore',
+        collaborator: 'Yengawa Lab',
+        iconURL: microbitIconURL,
+        insetIconURL: microbitInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Play with all functions of micro:bit."
+                description="Description for the micro:bit More v2 extension"
+                id="gui.extension.microbitMore.description"
+            />
+        ),
+        tags: ['device'],
+        featured: true,
+        bluetoothRequired: true,
+        launchPeripheralConnectionFlow: true,
+        useAutoScan: false,
+        internetConnectionRequired: false,
+        extensionURL: microbitMoreExtensionURL,
+        helpLink: 'https://microbit-more.github.io/'
+    },
+    {
+        name: 'iRobot Root',
+        extensionId: 'irobotRoot',
+        collaborator: 'naominix',
+        iconURL: irobotRootIconURL,
+        insetIconURL: irobotRootInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Control an iRobot Root robot over Bluetooth."
+                description="Description for the iRobot Root extension"
+                id="gui.extension.irobotRoot.description"
+            />
+        ),
+        tags: ['device'],
+        featured: true,
+        bluetoothRequired: false,
+        internetConnectionRequired: false,
+        extensionURL: irobotRootExtensionURL,
+        helpLink: 'https://github.com/naominix/xcx-irobot-root/'
+    },
+    {
+        name: 'AkaDako',
+        extensionId: 'g2s',
+        collaborator: 'TFabWorks',
+        iconURL: g2sIconURL,
+        insetIconURL: g2sInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Connect Grove sensors and actuators."
+                description="Description for the AkaDako extension"
+                id="gui.extension.g2s.description"
+            />
+        ),
+        tags: ['device', 'network'],
+        featured: true,
+        bluetoothRequired: false,
+        internetConnectionRequired: false,
+        extensionURL: g2sExtensionURL,
+        helpLink: 'https://akadako.com/'
+    },
+    {
+        name: 'PoseNet2Scratch',
+        extensionId: 'posenet2scratch',
+        collaborator: 'champierre',
+        iconURL: posenet2scratchIconURL,
+        insetIconURL: posenet2scratchInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Obtain the coordinates of each part of the body."
+                description="Description for the PoseNet2Scratch extension"
+                id="gui.extension.posenet2scratch.description"
+            />
+        ),
+        tags: ['image', 'ai'],
+        featured: true,
+        internetConnectionRequired: true,
+        helpLink: 'https://github.com/champierre/posenet2scratch/'
+    },
+    {
+        name: 'TM2Scratch',
+        extensionId: 'tm2scratch',
+        collaborator: 'Tsukurusha, YengawaLab and Google',
+        iconURL: tm2scratchIconURL,
+        insetIconURL: tm2scratchInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Recognize your own images and sounds."
+                description="Description for the TM2Scratch extension"
+                id="gui.extension.tm2scratch.description"
+            />
+        ),
+        tags: ['image', 'sound', 'ai'],
+        featured: true,
+        internetConnectionRequired: true,
+        helpLink: 'https://github.com/champierre/tm2scratch/'
+    },
+    {
+        name: 'TMPose2Scratch',
+        extensionId: 'tmpose2scratch',
+        collaborator: 'Tsukurusha, YengawaLab and Google',
+        iconURL: tmpose2scratchIconURL,
+        insetIconURL: tmpose2scratchInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Recognize your own poses."
+                description="Description for the TMPose2Scratch extension"
+                id="gui.extension.tmpose2scratch.description"
+            />
+        ),
+        tags: ['image', 'ai'],
+        featured: true,
+        internetConnectionRequired: true,
+        helpLink: 'https://github.com/champierre/tmpose2scratch/'
+    },
+    {
+        name: 'Scratch2Maqueen',
+        extensionId: 'scratch2maqueen',
+        collaborator: 'champierre',
+        iconURL: scratch2maqueenIconURL,
+        insetIconURL: scratch2maqueenInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Control DFRobot Maqueen."
+                description="Description for the Scratch2Maqueen extension"
+                id="gui.extension.scratch2maqueen.description"
+            />
+        ),
+        tags: ['device'],
+        featured: true,
+        bluetoothRequired: true,
+        launchPeripheralConnectionFlow: true,
+        useAutoScan: false,
+        helpLink: 'https://github.com/champierre/scratch2maqueen/'
+    },
+    {
+        name: 'Speech2Scratch',
+        extensionId: 'speech2scratch',
+        collaborator: 'champierre',
+        iconURL: speech2scratchIconURL,
+        insetIconURL: speech2scratchInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Convert speech into text."
+                description="Description for the Speech2Scratch extension"
+                id="gui.extension.speech2scratch.description"
+            />
+        ),
+        tags: ['sound', 'text'],
+        featured: true,
+        internetConnectionRequired: true,
+        helpLink: 'https://github.com/champierre/speech2scratch/'
+    },
     {
         name: (
             <FormattedMessage

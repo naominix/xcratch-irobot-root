@@ -1,4 +1,13 @@
 {
     "approved": [
+        "https://microbit-more.github.io/dist/microbitMore.mjs",
+        "https://naominix.github.io/xcx-irobot-root/irobotRoot.mjs",
+        "https://tfabworks.github.io/xcx-g2s/dist/g2s.mjs"
+    ],
+    "vendors": [
+        {
+            "url": "https://unpkg.com/ml5@0.12.2/dist/ml5.min.js",
+            "fileName": "ml5-0.12.2.min.js"
+        }
     ]
 }
