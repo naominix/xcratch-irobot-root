@@ -2,18 +2,68 @@
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
-let ml5Promise;
-const loadMl5 = () => {
-    if (globalThis.ml5) return Promise.resolve(globalThis.ml5);
-    if (ml5Promise) return ml5Promise;
-    ml5Promise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
+let isolatedMl5Promise;
+
+/**
+ * Load the legacy ml5 runtime in a separate JavaScript realm.
+ *
+ * ml5 0.12.2 bundles several TensorFlow.js packages. Loading that bundle in
+ * the editor window can make PoseNet use a different kernel registry from the
+ * one where the WebGL FromPixels kernel was registered. A same-origin iframe
+ * gives ml5 its own globals and kernel registry while still allowing us to
+ * copy the Scratch camera video to an iframe-owned canvas.
+ * @returns {Promise<object>} isolated ml5 runtime and its input canvas
+ */
+const loadIsolatedMl5 = () => {
+    if (isolatedMl5Promise) return isolatedMl5Promise;
+
+    isolatedMl5Promise = new Promise((resolve, reject) => {
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.tabIndex = -1;
+        Object.assign(iframe.style, {
+            position: 'fixed',
+            left: '-10000px',
+            top: '-10000px',
+            width: '1px',
+            height: '1px',
+            border: '0',
+            opacity: '0',
+            pointerEvents: 'none'
+        });
+        document.body.appendChild(iframe);
+
+        const frameWindow = iframe.contentWindow;
+        const frameDocument = iframe.contentDocument;
+        const canvas = frameDocument.createElement('canvas');
+        canvas.width = 480;
+        canvas.height = 360;
+        frameDocument.body.appendChild(canvas);
+
+        const script = frameDocument.createElement('script');
         script.src = new URL('./static/vendor/ml5-0.12.2.min.js', document.baseURI).href;
-        script.onload = () => resolve(globalThis.ml5);
-        script.onerror = () => reject(new Error('Failed to load the bundled ml5.js runtime'));
-        document.head.appendChild(script);
+        script.onload = () => {
+            if (!frameWindow.ml5) {
+                isolatedMl5Promise = null;
+                iframe.remove();
+                reject(new Error('The bundled ml5.js runtime did not initialize'));
+                return;
+            }
+            resolve({
+                canvas,
+                iframe,
+                ml5: frameWindow.ml5
+            });
+        };
+        script.onerror = () => {
+            isolatedMl5Promise = null;
+            iframe.remove();
+            reject(new Error('Failed to load the bundled ml5.js runtime'));
+        };
+        frameDocument.head.appendChild(script);
     });
-    return ml5Promise;
+
+    return isolatedMl5Promise;
 };
 const blockIconURI = 'data:image/png;base64,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';
 
@@ -370,33 +420,88 @@ class Scratch3Posenet2ScratchBlocks {
         this.keypoints = [];
         this.videoEnabled = false;
         this.locale = this.setLocale();
+        this._disposed = false;
+        this._poseInferenceErrorReported = false;
 
-        let detectPose = () => {
-          this.video = this.runtime.ioDevices.video.provider.video;
-          this.video.width = 480;
-          this.video.height = 360;
-          this.video.autoplay = true;
-          this.videoEnabled = true;
+        this.runtime.on('RUNTIME_DISPOSED', () => {
+            this._disposed = true;
+        });
 
-          this.poseNet = globalThis.ml5.poseNet(this.video, {maxPoseDetections: 10}, ()=>{
-            console.log('Model Loaded!');
-          });
+        loadIsolatedMl5()
+            .then(ml5Runtime => {
+                this._ml5Runtime = ml5Runtime;
+                this.poseNet = ml5Runtime.ml5.poseNet({
+                    detectionType: 'multiple',
+                    maxPoseDetections: 10
+                });
 
-          this.poseNet.on('pose', (poses)=>{
-            if (poses.length > 0 && this.videoEnabled) {
-              this.poses = poses;
-              this.keypoints = poses[0].pose.keypoints;
-            } else {
-              this.poses = [];
-              this.keypoints = [];
-            }
-          });
+                // Initialize the WebGL path with an iframe-owned canvas. This
+                // also detects a missing FromPixels kernel before the live loop.
+                const modelReady = this.poseNet.ready
+                    .then(() => this.poseNet.multiPose(ml5Runtime.canvas));
+                const videoReady = this.runtime.ioDevices.video.enableVideo();
+                return Promise.all([modelReady, videoReady]);
+            })
+            .then(() => {
+                if (this._disposed) return;
+
+                this.video = this.runtime.ioDevices.video.provider.video;
+                this.video.width = 480;
+                this.video.height = 360;
+                this.video.autoplay = true;
+                this.videoEnabled = true;
+                console.log('PoseNet2Scratch model loaded in isolated runtime');
+                this._detectPose();
+            })
+            .catch(error => console.error('PoseNet2Scratch initialization failed:', error));
+    }
+
+    _schedulePoseDetection () {
+        if (this._disposed) return;
+
+        if (this.videoEnabled) {
+            requestAnimationFrame(() => this._detectPose());
+        } else {
+            setTimeout(() => this._detectPose(), 100);
+        }
+    }
+
+    _detectPose () {
+        if (this._disposed) return;
+
+        if (!this.videoEnabled || !this.video || this.video.readyState < 2) {
+            this.poses = [];
+            this.keypoints = [];
+            this._schedulePoseDetection();
+            return;
         }
 
-        loadMl5()
-            .then(() => this.runtime.ioDevices.video.enableVideo())
-            .then(detectPose)
-            .catch(error => console.error('PoseNet2Scratch initialization failed:', error));
+        const canvas = this._ml5Runtime.canvas;
+        Promise.resolve()
+            .then(() => {
+                const context = canvas.getContext('2d');
+                context.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+                return this.poseNet.multiPose(canvas);
+            })
+            .then(poses => {
+                if (poses.length > 0 && this.videoEnabled) {
+                    this.poses = poses;
+                    this.keypoints = poses[0].pose.keypoints;
+                } else {
+                    this.poses = [];
+                    this.keypoints = [];
+                }
+                this._poseInferenceErrorReported = false;
+            })
+            .catch(error => {
+                this.poses = [];
+                this.keypoints = [];
+                if (!this._poseInferenceErrorReported) {
+                    console.error('PoseNet2Scratch inference failed:', error);
+                    this._poseInferenceErrorReported = true;
+                }
+            })
+            .then(() => this._schedulePoseDetection());
     }
 
     getInfo () {
@@ -1030,6 +1135,8 @@ class Scratch3Posenet2ScratchBlocks {
         this.globalVideoTransparency = 100;
         this.runtime.ioDevices.video.setPreviewGhost(100);
         this.videoEnabled = false;
+        this.poses = [];
+        this.keypoints = [];
       } else {
         this.globalVideoTransparency = 0;
         this.runtime.ioDevices.video.setPreviewGhost(0);
