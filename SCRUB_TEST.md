@@ -28,7 +28,7 @@ https://naominix.github.io/xcratch-scrub-test/editor/?extension=<encoded-extensi
 For example, this loads iRobot Root and MicroBit More:
 
 ```text
-https://naominix.github.io/xcratch-scrub-test/editor/?extension=https%3A%2F%2Fnaominix.github.io%2Fxcx-irobot-root%2FirobotRoot.mjs%3Fv%3Df0a62d3&extension=https%3A%2F%2Fmicrobit-more.github.io%2Fdist%2FmicrobitMore.mjs
+https://naominix.github.io/xcratch-scrub-test/editor/?extension=https%3A%2F%2Fnaominix.github.io%2Fxcx-irobot-root%2FirobotRoot.mjs%3Fv%3D1b5f711&extension=https%3A%2F%2Fmicrobit-more.github.io%2Fdist%2FmicrobitMore.mjs
 ```
 
 The extensions are loaded sequentially in the order in which they appear in
