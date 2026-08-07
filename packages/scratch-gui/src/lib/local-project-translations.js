@@ -3,6 +3,13 @@
 const localProjectTranslations = {
     'ja': {
         'xcratch.menuBar.openProjectLibrary': 'プロジェクト一覧から開く',
+        'xcratch.menuBar.openProjectHistory': '履歴を見る',
+        'xcratch.menuBar.saveVersion': 'コメントを付けて保存',
+        'xcratch.saveVersionModal.title': 'バージョンを保存',
+        'xcratch.saveVersionModal.keepLabel': 'このバージョンを削除されないようにロックする',
+        'xcratch.saveVersionModal.save': '保存',
+        'xcratch.saveVersionModal.saving': '保存中…',
+        'xcratch.saveVersionModal.error': '保存に失敗しました: {error}',
         'xcratch.projectLibrary.title': 'ブラウザーの中のプロジェクト',
         'xcratch.projectLibrary.empty': 'このブラウザーに保存されたプロジェクトはまだありません。',
         'xcratch.projectLibrary.current': '編集中',
@@ -27,12 +34,25 @@ const localProjectTranslations = {
         'xcratch.projectHistory.deleteVersionConfirm': 'この履歴を削除しますか?この操作は元に戻せません。',
         'xcratch.projectHistory.lock': '削除されないようにこの版をロックする',
         'xcratch.projectHistory.unlock': 'この版のロックを解除する',
+        'xcratch.projectHistory.playVersion': 'このバージョンを再生',
+        'xcratch.projectHistory.seeInsideVersion': '中を見る',
+        'xcratch.projectHistory.close': '閉じる',
+        'xcratch.projectHistory.diffCode': 'コード',
+        'xcratch.projectHistory.diffAssets': '見た目・音',
+        'xcratch.projectHistory.diffSprites': 'スプライト',
         'xcratch.projectConflict.confirm': 'このプロジェクトは別のタブで更新されています。\n' +
             'OK: このタブの内容で上書き保存する\n' +
             'キャンセル: このタブの変更を破棄して、最新の保存内容を読み込む'
     },
     'ja-Hira': {
         'xcratch.menuBar.openProjectLibrary': 'プロジェクトいちらんからひらく',
+        'xcratch.menuBar.openProjectHistory': 'りれきをみる',
+        'xcratch.menuBar.saveVersion': 'コメントをつけてほぞん',
+        'xcratch.saveVersionModal.title': 'バージョンをほぞん',
+        'xcratch.saveVersionModal.keepLabel': 'このバージョンをさくじょされないようにロックする',
+        'xcratch.saveVersionModal.save': 'ほぞん',
+        'xcratch.saveVersionModal.saving': 'ほぞんちゅう…',
+        'xcratch.saveVersionModal.error': 'ほぞんにしっぱいしました: {error}',
         'xcratch.projectLibrary.title': 'ブラウザーのなかのプロジェクト',
         'xcratch.projectLibrary.empty': 'このブラウザーにほぞんされたプロジェクトはまだありません。',
         'xcratch.projectLibrary.current': 'へんしゅうちゅう',
@@ -57,6 +77,12 @@ const localProjectTranslations = {
         'xcratch.projectHistory.deleteVersionConfirm': 'このりれきをさくじょしますか?このそうさはもとにもどせません。',
         'xcratch.projectHistory.lock': 'さくじょされないようにこのばんをロックする',
         'xcratch.projectHistory.unlock': 'このばんのロックをかいじょする',
+        'xcratch.projectHistory.playVersion': 'このバージョンをさいせいする',
+        'xcratch.projectHistory.seeInsideVersion': 'なかをみる',
+        'xcratch.projectHistory.close': 'とじる',
+        'xcratch.projectHistory.diffCode': 'コード',
+        'xcratch.projectHistory.diffAssets': 'みため・おと',
+        'xcratch.projectHistory.diffSprites': 'スプライト',
         'xcratch.projectConflict.confirm': 'このプロジェクトはべつのタブでこうしんされています。\n' +
             'OK: このタブのないようでうわがきほぞんする\n' +
             'キャンセル: このタブのへんこうをすてて、さいしんのほぞんないようをよみこむ'

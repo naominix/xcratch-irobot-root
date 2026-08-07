@@ -48,6 +48,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
         constructor (props) {
             super(props);
             bindAll(this, [
+                'handleSaveVersionRequest',
                 'leavePageConfirm',
                 'tryToAutoSave'
             ]);
@@ -63,6 +64,9 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(callback => getProjectThumbnail(this.props.vm, callback));
             this.props.onSetProjectSaver(this.tryToAutoSave);
+            // Let extension blocks request a project history version save
+            // (with comment/keep) through the VM/runtime.
+            this.props.vm.attachProjectSaveHandler(this.handleSaveVersionRequest);
         }
         componentDidUpdate (prevProps) {
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
@@ -137,6 +141,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // Remove project thumbnailer function since the components are unmounting
             this.props.onSetProjectThumbnailer(null);
             this.props.onSetProjectSaver(null);
+            this.props.vm.attachProjectSaveHandler(null);
         }
         leavePageConfirm (e) {
             if (this.props.projectChanged) {
@@ -169,7 +174,12 @@ const ProjectSaverHOC = function (WrappedComponent) {
         }
         updateProjectToStorage () {
             this.props.onShowSavingAlert();
-            return this.storeProject(this.props.reduxProjectId)
+            // Always send the current title so renames persist on ordinary saves, not
+            // just copy/remix. Safe for the local storage backend too: it already
+            // accepts params.title and would fall back to the same redux title anyway.
+            return this.storeProject(this.props.reduxProjectId, {
+                title: this.props.reduxProjectTitle
+            })
                 .then(() => {
                     // there's an http response object available here, but we don't need to examine
                     // it, because there are no values contained in it that we care about
@@ -226,6 +236,29 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 });
         }
         /**
+         * Force-save a new project history version with a comment and keep
+         * flag, on request from an extension block via
+         * `runtime.saveProjectVersion` (wired through `vm.attachProjectSaveHandler`).
+         * @param {string} comment - free-form note to attach to the new version
+         * @param {boolean} isKeep - whether the new version should be protected from thinning
+         * @returns {Promise} - resolves with `{timestamp}` of the new version, or rejects if
+         * the current storage doesn't support version history or the project hasn't been saved yet
+         */
+        handleSaveVersionRequest (comment, isKeep) {
+            if (typeof this.props.storage.saveVersionWithMeta !== 'function') {
+                return Promise.reject(new Error(
+                    'saveVersionWithMeta is not supported by the current project storage'));
+            }
+            if (!this.props.reduxProjectId) {
+                return Promise.reject(new Error(
+                    'Cannot save a project version before the project has been saved'));
+            }
+            return this.storeProject(this.props.reduxProjectId, {}, {
+                saveFn: (id, vmState) => this.props.storage.saveVersionWithMeta(id, vmState, {comment, isKeep})
+            }).then(response => ({timestamp: response.timestamp}));
+        }
+
+        /**
          * storeProject:
          * @param  {number|string|undefined} projectId - defined value will PUT/update; undefined/null will POST/create
          * @returns {Promise} - resolves with json object containing project's existing or new id
@@ -244,7 +277,8 @@ const ProjectSaverHOC = function (WrappedComponent) {
             const savedVMState = this.props.vm.toJSON();
             const scratchStorage = this.props.storage.scratchStorage;
 
-            const saveProject = this.props.onUpdateProjectData ||
+            const saveProject = options?.saveFn ||
+                this.props.onUpdateProjectData ||
                 ((id, vmState, params) => this.props.storage.saveProject(id, vmState, params));
 
             return Promise.all(this.props.vm.assets

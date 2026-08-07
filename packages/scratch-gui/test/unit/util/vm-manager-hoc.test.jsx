@@ -34,6 +34,10 @@ describe('VMManagerHOC', () => {
         vm.setCompatibilityMode = jest.fn();
         vm.setLocale = jest.fn();
         vm.start = jest.fn();
+        Object.defineProperty(vm, 'renderer', {
+            configurable: true,
+            value: {draw: jest.fn()}
+        });
     });
     test('when it mounts in player mode, the vm is initialized but not started', () => {
         const Component = () => (<div />);
@@ -177,7 +181,7 @@ describe('VMManagerHOC', () => {
             window.history.replaceState({}, '', originalUrl);
         }
     });
-    test('if the isLoadingWithId prop becomes true, it loads project data into the vm', () => {
+    test('if the isLoadingWithId prop becomes true, it loads project data into the vm', async () => {
         vm.loadProject = jest.fn(() => Promise.resolve());
         const mockedOnLoadedProject = jest.fn();
         const Component = () => <div />;
@@ -203,13 +207,12 @@ describe('VMManagerHOC', () => {
                 projectData="100"
             />
         );
-        expect(vm.loadProject).toHaveBeenLastCalledWith('100');
-        // delay needed since vm.loadProject is async, and we have to wait for it :/
-        setTimeout(() => (
+        await waitFor(() => expect(vm.loadProject).toHaveBeenLastCalledWith('100'));
+        await waitFor(() => (
             expect(mockedOnLoadedProject).toHaveBeenLastCalledWith(LoadingState.LOADING_VM_WITH_ID, true)
-        ), 1);
+        ));
     });
-    test('if the fontsLoaded prop becomes true, it loads project data into the vm', () => {
+    test('if the fontsLoaded prop becomes true, it loads project data into the vm', async () => {
         vm.loadProject = jest.fn(() => Promise.resolve());
         const mockedOnLoadedProject = jest.fn();
         const Component = () => <div />;
@@ -234,11 +237,10 @@ describe('VMManagerHOC', () => {
                 projectData="100"
             />
         );
-        expect(vm.loadProject).toHaveBeenLastCalledWith('100');
-        // delay needed since vm.loadProject is async, and we have to wait for it :/
-        setTimeout(() => (
+        await waitFor(() => expect(vm.loadProject).toHaveBeenLastCalledWith('100'));
+        await waitFor(() => (
             expect(mockedOnLoadedProject).toHaveBeenLastCalledWith(LoadingState.LOADING_VM_WITH_ID, false)
-        ), 1);
+        ));
     });
     test('if the fontsLoaded prop is false, project data is never loaded', () => {
         vm.loadProject = jest.fn(() => Promise.resolve());
