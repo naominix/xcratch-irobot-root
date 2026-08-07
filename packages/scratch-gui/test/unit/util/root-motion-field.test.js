@@ -77,4 +77,18 @@ describe('Root motion picker', () => {
             document.documentElement.lang = previousLanguage;
         }
     });
+
+    test('reads the locale getter again whenever the picker is opened', () => {
+        let scratchBlocksLocale = 'ja';
+        const options = {
+            getLocale: () => scratchBlocksLocale,
+            labels: {en: 'Travel distance', ja: '移動する距離', 'ja-Hira': 'すすむきょり'}
+        };
+
+        expect(localizedLabel(options)).toBe('移動する距離');
+        scratchBlocksLocale = 'en';
+        expect(localizedLabel(options)).toBe('Travel distance');
+        scratchBlocksLocale = 'ja-Hira';
+        expect(localizedLabel(options)).toBe('すすむきょり');
+    });
 });
