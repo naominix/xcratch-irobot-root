@@ -11,6 +11,7 @@ import {initializeBlocksToImage} from '../lib/blocks-to-image';
 import {initializeEditValueInEditor} from '../lib/edit-value-in-editor';
 import {initializeListEditor} from '../lib/list-editor';
 import {initializeReportBubbleCopy} from '../lib/report-bubble-copy';
+import {registerRootMotionField} from '../lib/root-motion-field';
 
 import analytics from '../lib/analytics';
 import log from '../lib/log.js';
@@ -87,6 +88,7 @@ class Blocks extends React.Component {
             'onBlockGlowOff',
             'handleMonitorsUpdate',
             'handleExtensionAdded',
+            'handleExtensionFieldAdded',
             'handleBlocksInfoUpdate',
             'onTargetsUpdate',
             'onVisualReport',
@@ -321,6 +323,7 @@ class Blocks extends React.Component {
         this.props.vm.addListener('targetsUpdate', this.onTargetsUpdate);
         this.props.vm.addListener('MONITORS_UPDATE', this.handleMonitorsUpdate);
         this.props.vm.addListener('EXTENSION_ADDED', this.handleExtensionAdded);
+        this.props.vm.addListener('EXTENSION_FIELD_ADDED', this.handleExtensionFieldAdded);
         this.props.vm.addListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.addListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.addListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
@@ -335,6 +338,7 @@ class Blocks extends React.Component {
         this.props.vm.removeListener('targetsUpdate', this.onTargetsUpdate);
         this.props.vm.removeListener('MONITORS_UPDATE', this.handleMonitorsUpdate);
         this.props.vm.removeListener('EXTENSION_ADDED', this.handleExtensionAdded);
+        this.props.vm.removeListener('EXTENSION_FIELD_ADDED', this.handleExtensionFieldAdded);
         this.props.vm.removeListener('BLOCKSINFO_UPDATE', this.handleBlocksInfoUpdate);
         this.props.vm.removeListener('PERIPHERAL_CONNECTED', this.handleStatusButtonUpdate);
         this.props.vm.removeListener('PERIPHERAL_DISCONNECTED', this.handleStatusButtonUpdate);
@@ -527,6 +531,9 @@ class Blocks extends React.Component {
         if (toolboxXML) {
             this.props.updateToolboxState(toolboxXML);
         }
+    }
+    handleExtensionFieldAdded (fieldName, implementation) {
+        registerRootMotionField(this.ScratchBlocks, fieldName, implementation);
     }
     handleBlocksInfoUpdate (categoryInfo) {
         // @todo Later we should replace this to avoid all the warnings from redefining blocks.
