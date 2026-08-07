@@ -1,4 +1,5 @@
 import {
+    normalizeDirectValue,
     quantize,
     registerRootMotionField,
     valueFromAnglePosition,
@@ -17,6 +18,14 @@ describe('Root motion picker', () => {
         expect(quantize(94, -500, 500, 10)).toBe(90);
         expect(quantize(-96, -500, 500, 10)).toBe(-100);
         expect(quantize(183, -180, 180, 5)).toBe(180);
+    });
+
+    test('keeps precise direct input while constraining it to a safe range', () => {
+        expect(normalizeDirectValue('126.2', -500, 500)).toBe(126.2);
+        expect(normalizeDirectValue('-68,5', -180, 180)).toBe(-68.5);
+        expect(normalizeDirectValue('900', -500, 500)).toBe(500);
+        expect(normalizeDirectValue('-', -500, 500)).toBeNull();
+        expect(normalizeDirectValue('not a number', -500, 500)).toBeNull();
     });
 
     test('maps circular drag positions to signed clockwise angles', () => {

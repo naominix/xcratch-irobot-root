@@ -14,6 +14,14 @@ const quantize = (value, min, max, step) => {
     return Number(clamp(rounded, min, max).toFixed(decimals));
 };
 
+const normalizeDirectValue = (value, min, max) => {
+    const normalized = typeof value === 'string' ? value.replace(',', '.').trim() : value;
+    if (normalized === '' || normalized === '-' || normalized === '.' || normalized === '-.') return null;
+    const number = Number(normalized);
+    if (!Number.isFinite(number)) return null;
+    return clamp(number, min, max);
+};
+
 const valueFromLinearPosition = (clientX, left, width, min, max, step) => {
     const ratio = clamp((clientX - left) / Math.max(1, width), 0, 1);
     return quantize(min + ((max - min) * ratio), min, max, step);
@@ -205,6 +213,11 @@ const localizedLabel = options => {
     return (options.labels && (options.labels[language] || options.labels.en)) || '';
 };
 
+const localizedText = (english, japanese) => {
+    const locale = (document.documentElement.lang || navigator.language || 'en').toLowerCase();
+    return locale.startsWith('ja') ? japanese : english;
+};
+
 const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
     const min = Number(options.min);
     const max = Number(options.max);
@@ -215,7 +228,9 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
      * @param {number|string} value - Initial numeric value.
      */
     const RootMotionField = function (value) {
-        ScratchBlocks.FieldNumber.call(this, value, min, max, step);
+        // Keep drag gestures snapped to `step`, but allow precise decimal values
+        // when the learner types a number directly.
+        ScratchBlocks.FieldNumber.call(this, value, min, max);
         this.rootMotionOptions_ = options;
         this.rootMotionSvg_ = null;
         this.rootMotionValue_ = null;
@@ -247,10 +262,44 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
         header.style.marginBottom = '6px';
         const title = document.createElement('span');
         title.textContent = localizedLabel(options);
-        this.rootMotionValue_ = document.createElement('span');
-        this.rootMotionValue_.style.color = '#0f7f69';
+        const inputControls = document.createElement('div');
+        inputControls.style.display = 'flex';
+        inputControls.style.alignItems = 'center';
+        inputControls.style.gap = '5px';
+        this.rootMotionValue_ = document.createElement('input');
+        this.rootMotionValue_.type = 'text';
+        this.rootMotionValue_.inputMode = 'decimal';
+        this.rootMotionValue_.pattern = '-?[0-9]*([.,][0-9]*)?';
+        this.rootMotionValue_.enterKeyHint = 'done';
+        this.rootMotionValue_.autocomplete = 'off';
+        this.rootMotionValue_.setAttribute('aria-label', localizedText('Enter an exact value', '正確な数値を入力'));
+        this.rootMotionValue_.style.width = '72px';
+        this.rootMotionValue_.style.boxSizing = 'border-box';
+        this.rootMotionValue_.style.padding = '5px 7px';
+        this.rootMotionValue_.style.border = '2px solid #0f7f69';
+        this.rootMotionValue_.style.borderRadius = '8px';
+        this.rootMotionValue_.style.background = '#ffffff';
+        this.rootMotionValue_.style.color = '#263238';
+        this.rootMotionValue_.style.font = '600 15px sans-serif';
+        this.rootMotionValue_.style.textAlign = 'right';
+        const unit = document.createElement('span');
+        unit.textContent = options.unit || '';
+        unit.style.minWidth = '20px';
+        const keypadToggle = document.createElement('button');
+        keypadToggle.type = 'button';
+        keypadToggle.textContent = '⌨';
+        keypadToggle.title = localizedText('Show on-screen keypad', '画面内テンキーを表示');
+        keypadToggle.setAttribute('aria-label', keypadToggle.title);
+        keypadToggle.style.padding = '4px 7px';
+        keypadToggle.style.border = '1px solid #607d8b';
+        keypadToggle.style.borderRadius = '7px';
+        keypadToggle.style.background = '#ffffff';
+        keypadToggle.style.cursor = 'pointer';
         header.appendChild(title);
-        header.appendChild(this.rootMotionValue_);
+        inputControls.appendChild(this.rootMotionValue_);
+        inputControls.appendChild(unit);
+        if (options.keypad !== false) inputControls.appendChild(keypadToggle);
+        header.appendChild(inputControls);
         content.appendChild(header);
 
         this.rootMotionSvg_ = createSvgElement('svg', {
@@ -261,15 +310,112 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
         });
         content.appendChild(this.rootMotionSvg_);
 
-        const updateDisplay = value => {
-            const nextValue = quantize(value, min, max, step);
+        const keypad = document.createElement('div');
+        keypad.hidden = true;
+        keypad.style.display = 'none';
+        keypad.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        keypad.style.gap = '6px';
+        keypad.style.marginTop = '8px';
+        keypad.setAttribute('role', 'group');
+        keypad.setAttribute('aria-label', localizedText('Numeric keypad', '数値テンキー'));
+        content.appendChild(keypad);
+
+        const updateDisplay = (value, updateInput = true) => {
+            const nextValue = normalizeDirectValue(value, min, max);
+            if (nextValue === null) return;
             this.setValue(String(nextValue));
             if (ScratchBlocks.FieldTextInput.htmlInput_) {
                 ScratchBlocks.FieldTextInput.htmlInput_.value = String(nextValue);
             }
-            this.rootMotionValue_.textContent = `${nextValue} ${options.unit || ''}`;
+            if (updateInput) this.rootMotionValue_.value = String(nextValue);
             drawGraphic(this.rootMotionSvg_, nextValue, options);
         };
+
+        const commitDirectInput = () => {
+            const nextValue = normalizeDirectValue(this.rootMotionValue_.value, min, max);
+            updateDisplay(nextValue === null ? this.getValue() : nextValue);
+        };
+
+        this.rootMotionValue_.addEventListener('input', () => {
+            const nextValue = normalizeDirectValue(this.rootMotionValue_.value, min, max);
+            if (nextValue !== null) updateDisplay(nextValue, false);
+        });
+        this.rootMotionValue_.addEventListener('change', commitDirectInput);
+        this.rootMotionValue_.addEventListener('blur', commitDirectInput);
+        this.rootMotionValue_.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                commitDirectInput();
+                this.rootMotionValue_.blur();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                updateDisplay(this.getValue());
+                this.rootMotionValue_.blur();
+            }
+        });
+
+        const dispatchKeypadInput = () => {
+            this.rootMotionValue_.dispatchEvent(new Event('input', {bubbles: true}));
+            this.rootMotionValue_.focus({preventScroll: true});
+        };
+
+        const handleKeypad = key => {
+            const input = this.rootMotionValue_;
+            const start = input.selectionStart === null ? input.value.length : input.selectionStart;
+            const end = input.selectionEnd === null ? start : input.selectionEnd;
+            if (key === 'done') {
+                commitDirectInput();
+                keypad.hidden = true;
+                keypad.style.display = 'none';
+                input.blur();
+                return;
+            }
+            if (key === 'backspace') {
+                if (start !== end) input.setRangeText('', start, end, 'end');
+                else if (start > 0) input.setRangeText('', start - 1, start, 'end');
+            } else if (key === 'sign') {
+                input.value = input.value.startsWith('-') ? input.value.slice(1) : `-${input.value}`;
+                input.setSelectionRange(input.value.length, input.value.length);
+            } else if (key === '.') {
+                if (!input.value.includes('.') && !input.value.includes(',')) {
+                    input.setRangeText('.', start, end, 'end');
+                }
+            } else {
+                input.setRangeText(key, start, end, 'end');
+            }
+            dispatchKeypadInput();
+        };
+
+        const keypadKeys = [
+            ['7', '7'], ['8', '8'], ['9', '9'],
+            ['4', '4'], ['5', '5'], ['6', '6'],
+            ['1', '1'], ['2', '2'], ['3', '3'],
+            ['±', 'sign'], ['0', '0'], ['.', '.'],
+            ['⌫', 'backspace'], [localizedText('Done', '完了'), 'done']
+        ];
+        keypadKeys.forEach(([label, key]) => {
+            if (key === 'sign' && min >= 0) return;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.style.minHeight = '36px';
+            button.style.border = '1px solid #78909c';
+            button.style.borderRadius = '7px';
+            button.style.background = key === 'done' ? '#0f7f69' : '#ffffff';
+            button.style.color = key === 'done' ? '#ffffff' : '#263238';
+            button.style.font = '600 15px sans-serif';
+            button.style.cursor = 'pointer';
+            if (key === 'done') button.style.gridColumn = 'span 2';
+            button.addEventListener('pointerdown', event => event.preventDefault());
+            button.addEventListener('click', () => handleKeypad(key));
+            keypad.appendChild(button);
+        });
+
+        keypadToggle.addEventListener('click', () => {
+            keypad.hidden = !keypad.hidden;
+            keypad.style.display = keypad.hidden ? 'none' : 'grid';
+            keypadToggle.setAttribute('aria-expanded', String(!keypad.hidden));
+        });
 
         const updateFromPointer = event => {
             event.preventDefault();
@@ -316,6 +462,7 @@ const registerRootMotionField = (ScratchBlocks, name, implementation) => {
 export {
     clamp,
     createRootMotionFieldImplementation,
+    normalizeDirectValue,
     quantize,
     registerRootMotionField,
     valueFromAnglePosition,
