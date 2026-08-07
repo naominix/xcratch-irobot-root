@@ -1,4 +1,6 @@
 import {
+    localizedLabel,
+    localizedText,
     normalizeDirectValue,
     quantize,
     registerRootMotionField,
@@ -41,5 +43,18 @@ describe('Root motion picker', () => {
 
         expect(registerRootMotionField(ScratchBlocks, 'field_other', {type: 'other'})).toBe(false);
         expect(register).not.toHaveBeenCalled();
+    });
+
+    test('uses dedicated hiragana labels for the ja-Hira locale', () => {
+        const previousLanguage = document.documentElement.lang;
+        document.documentElement.lang = 'ja-Hira';
+        try {
+            expect(localizedLabel({
+                labels: {en: 'Turn angle', ja: '回転する角度', 'ja-Hira': 'まわるかくど'}
+            })).toBe('まわるかくど');
+            expect(localizedText('Done', '完了', 'かんりょう')).toBe('かんりょう');
+        } finally {
+            document.documentElement.lang = previousLanguage;
+        }
     });
 });

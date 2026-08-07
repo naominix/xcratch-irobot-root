@@ -207,15 +207,21 @@ const drawGraphic = (svg, value, options) => {
     if (options.mode !== 'turn') drawLinearTrack(svg, value, options);
 };
 
-const localizedLabel = options => {
+const rootMotionLanguage = () => {
     const locale = (document.documentElement.lang || navigator.language || 'en').toLowerCase();
-    const language = locale.startsWith('ja') ? 'ja' : 'en';
+    if (locale === 'ja-hira' || locale.startsWith('ja-hira-')) return 'ja-Hira';
+    return locale.startsWith('ja') ? 'ja' : 'en';
+};
+
+const localizedLabel = options => {
+    const language = rootMotionLanguage();
     return (options.labels && (options.labels[language] || options.labels.en)) || '';
 };
 
-const localizedText = (english, japanese) => {
-    const locale = (document.documentElement.lang || navigator.language || 'en').toLowerCase();
-    return locale.startsWith('ja') ? japanese : english;
+const localizedText = (english, japanese, hiragana = japanese) => {
+    const language = rootMotionLanguage();
+    if (language === 'ja-Hira') return hiragana;
+    return language === 'ja' ? japanese : english;
 };
 
 const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
@@ -272,7 +278,9 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
         this.rootMotionValue_.pattern = '-?[0-9]*([.,][0-9]*)?';
         this.rootMotionValue_.enterKeyHint = 'done';
         this.rootMotionValue_.autocomplete = 'off';
-        this.rootMotionValue_.setAttribute('aria-label', localizedText('Enter an exact value', '正確な数値を入力'));
+        this.rootMotionValue_.setAttribute('aria-label', localizedText(
+            'Enter an exact value', '正確な数値を入力', 'せいかくなすうじをにゅうりょく'
+        ));
         this.rootMotionValue_.style.width = '72px';
         this.rootMotionValue_.style.boxSizing = 'border-box';
         this.rootMotionValue_.style.padding = '5px 7px';
@@ -288,7 +296,9 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
         const keypadToggle = document.createElement('button');
         keypadToggle.type = 'button';
         keypadToggle.textContent = '⌨';
-        keypadToggle.title = localizedText('Show on-screen keypad', '画面内テンキーを表示');
+        keypadToggle.title = localizedText(
+            'Show on-screen keypad', '画面内テンキーを表示', 'がめんないのてんきーをひょうじ'
+        );
         keypadToggle.setAttribute('aria-label', keypadToggle.title);
         keypadToggle.style.padding = '4px 7px';
         keypadToggle.style.border = '1px solid #607d8b';
@@ -317,7 +327,7 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
         keypad.style.gap = '6px';
         keypad.style.marginTop = '8px';
         keypad.setAttribute('role', 'group');
-        keypad.setAttribute('aria-label', localizedText('Numeric keypad', '数値テンキー'));
+        keypad.setAttribute('aria-label', localizedText('Numeric keypad', '数値テンキー', 'すうじのてんきー'));
         content.appendChild(keypad);
 
         const updateDisplay = (value, updateInput = true) => {
@@ -391,7 +401,7 @@ const createRootMotionFieldImplementation = (ScratchBlocks, options) => {
             ['4', '4'], ['5', '5'], ['6', '6'],
             ['1', '1'], ['2', '2'], ['3', '3'],
             ['±', 'sign'], ['0', '0'], ['.', '.'],
-            ['⌫', 'backspace'], [localizedText('Done', '完了'), 'done']
+            ['⌫', 'backspace'], [localizedText('Done', '完了', 'かんりょう'), 'done']
         ];
         keypadKeys.forEach(([label, key]) => {
             if (key === 'sign' && min >= 0) return;
@@ -462,9 +472,12 @@ const registerRootMotionField = (ScratchBlocks, name, implementation) => {
 export {
     clamp,
     createRootMotionFieldImplementation,
+    localizedLabel,
+    localizedText,
     normalizeDirectValue,
     quantize,
     registerRootMotionField,
+    rootMotionLanguage,
     valueFromAnglePosition,
     valueFromLinearPosition
 };
