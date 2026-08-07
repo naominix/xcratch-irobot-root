@@ -57,4 +57,24 @@ describe('Root motion picker', () => {
             document.documentElement.lang = previousLanguage;
         }
     });
+
+    test('uses the current Scratch locale instead of a stale browser language', () => {
+        const previousLanguage = document.documentElement.lang;
+        document.documentElement.lang = 'ja';
+        let locale = 'en';
+        const options = {
+            getLocale: () => locale,
+            labels: {en: 'Travel distance', ja: '移動する距離', 'ja-Hira': 'すすむきょり'}
+        };
+        try {
+            expect(localizedLabel(options)).toBe('Travel distance');
+            expect(localizedText('Done', '完了', 'かんりょう', options)).toBe('Done');
+
+            locale = 'ja-Hira';
+            expect(localizedLabel(options)).toBe('すすむきょり');
+            expect(localizedText('Done', '完了', 'かんりょう', options)).toBe('かんりょう');
+        } finally {
+            document.documentElement.lang = previousLanguage;
+        }
+    });
 });

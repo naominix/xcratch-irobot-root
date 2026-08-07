@@ -533,7 +533,7 @@ class Blocks extends React.Component {
         }
     }
     handleExtensionFieldAdded (fieldName, implementation) {
-        registerRootMotionField(this.ScratchBlocks, fieldName, implementation);
+        registerRootMotionField(this.ScratchBlocks, fieldName, implementation, () => this.props.locale);
     }
     handleBlocksInfoUpdate (categoryInfo) {
         // @todo Later we should replace this to avoid all the warnings from redefining blocks.
