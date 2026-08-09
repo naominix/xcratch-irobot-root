@@ -61,6 +61,12 @@ const DroppableBlocks = DropAreaHOC([
 class Blocks extends React.Component {
     constructor (props) {
         super(props);
+        // Extensions cannot know whether their custom field renderer exists in
+        // the GUI. Advertise the Root motion picker explicitly so the Root
+        // extension can otherwise fall back to standard Scratch number fields.
+        if (props.vm && props.vm.runtime) {
+            props.vm.runtime.irobotRootMotionPickerSupported = true;
+        }
         this.ScratchBlocks = VMScratchBlocks(props.vm, false);
         bindAll(this, [
             'attachVM',
