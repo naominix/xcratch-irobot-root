@@ -1,0 +1,18 @@
+[
+  {
+    "url": "https://microbit-more.github.io/dist/microbitMore.mjs",
+    "path": "./static/preloaded-extensions/microbitMore.mjs"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/naominix/xcx-irobot-root/9359ae7/dist/irobotRoot.mjs",
+    "path": "./static/preloaded-extensions/irobotRoot.mjs"
+  },
+  {
+    "url": "https://tfabworks.github.io/xcx-g2s/dist/g2s.mjs",
+    "path": "./static/preloaded-extensions/g2s.mjs"
+  },
+  {
+    "url": "https://con3code.github.io/xcx-numberbank/dist/numberbank.mjs",
+    "path": "./static/preloaded-extensions/numberbank.mjs"
+  }
+]
