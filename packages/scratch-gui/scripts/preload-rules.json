@@ -11,6 +11,10 @@
         {
             "url": "https://tfabworks.github.io/xcx-g2s/dist/g2s.mjs",
             "fileName": "g2s.mjs"
+        },
+        {
+            "url": "https://con3code.github.io/xcx-numberbank/dist/numberbank.mjs",
+            "fileName": "numberbank.mjs"
         }
     ],
     "vendors": [
