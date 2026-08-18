@@ -73,6 +73,7 @@ import g2sInsetIconURL from './g2s/g2s-small.png';
 const microbitMoreExtensionURL = './static/preloaded-extensions/microbitMore.mjs';
 const irobotRootExtensionURL = './static/preloaded-extensions/irobotRoot.mjs';
 const g2sExtensionURL = './static/preloaded-extensions/g2s.mjs';
+const numberbankExtensionURL = './static/preloaded-extensions/numberbank.mjs';
 
 const extensions = [
     {
@@ -136,6 +137,23 @@ const extensions = [
         internetConnectionRequired: false,
         extensionURL: g2sExtensionURL,
         helpLink: 'https://akadako.com/'
+    },
+    {
+        name: 'NumberBank',
+        extensionId: 'numberbank',
+        collaborator: 'con3.com',
+        description: (
+            <FormattedMessage
+                defaultMessage="Use NumberBank tools in your projects."
+                description="Description for the NumberBank extension"
+                id="gui.extension.numberbank.description"
+            />
+        ),
+        tags: ['data', 'math'],
+        featured: true,
+        internetConnectionRequired: false,
+        extensionURL: numberbankExtensionURL,
+        helpLink: 'https://con3.com/sc2scratch/'
     },
     {
         name: 'PoseNet2Scratch',
