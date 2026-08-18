@@ -69,6 +69,8 @@ import irobotRootInsetIconURL from './irobotRoot/irobotRoot-small.png';
 
 import g2sIconURL from './g2s/g2s.png';
 import g2sInsetIconURL from './g2s/g2s-small.png';
+import numberbankIconURL from './numberbank/numberbank.svg';
+import numberbankInsetIconURL from './numberbank/numberbank-small.svg';
 
 const microbitMoreExtensionURL = './static/preloaded-extensions/microbitMore.mjs';
 const irobotRootExtensionURL = './static/preloaded-extensions/irobotRoot.mjs';
@@ -142,6 +144,8 @@ const extensions = [
         name: 'NumberBank',
         extensionId: 'numberbank',
         collaborator: 'con3.com',
+        iconURL: numberbankIconURL,
+        insetIconURL: numberbankInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Use NumberBank tools in your projects."
