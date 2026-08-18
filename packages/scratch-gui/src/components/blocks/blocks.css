@@ -98,21 +98,33 @@
     min-height: auto;
 }
 
-/* Show whole shape of blocks when mouse over on the pallet. */
-.blocks :global(.blocklyFlyout:hover) {
-    overflow: visible;
-    clip-path: inset(0 -100vw 0 0);
-    -webkit-clip-path: inset(0 -100vw 0 0);
+/* Show whole block shapes only for a real mouse hover. On touch devices,
+ * :hover may remain active after a tap and make the flyout overflow its
+ * scroll area, which prevents long extension palettes from scrolling. */
+@media (hover: hover) and (pointer: fine) {
+    .blocks :global(.blocklyFlyout:hover) {
+        overflow: visible;
+        clip-path: inset(0 -100vw 0 0);
+        -webkit-clip-path: inset(0 -100vw 0 0);
+    }
+
+    [dir="rtl"] .blocks :global(.blocklyFlyout:hover) {
+        clip-path: inset(0 0 0 -100vw);
+        -webkit-clip-path: inset(0 0 0 -100vw);
+    }
+
+    .blocks :global(.blocklyFlyout:hover .blocklyWorkspace) {
+        -webkit-clip-path: none;
+        clip-path: none;
+    }
 }
 
-[dir="rtl"] .blocks :global(.blocklyFlyout:hover) {
-    clip-path: inset(0 0 0 -100vw);
-    -webkit-clip-path: inset(0 0 0 -100vw);
-}
-
-.blocks :global(.blocklyFlyout:hover .blocklyWorkspace) {
-    -webkit-clip-path: none;
-    clip-path: none;
+/* Preserve native vertical scrolling for the toolbox on iPadOS and other
+ * coarse-pointer devices while leaving block dragging to Blockly. */
+@media (pointer: coarse) {
+    .blocks :global(.blocklyToolboxDiv) {
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 .blocks :global(.blocklyScrollbarBackground:hover) {
